@@ -93,4 +93,4 @@ def webhook():
             return jsonify({'error': 'Registro não encontrado'}), 404
             
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port= 5003, debug=True)
