@@ -4,8 +4,15 @@ import os
 from dotenv import load_dotenv
 from pyairtable import Table
 import json
+import logging
 
 load_dotenv()
+
+logging.basicConfig(
+    filename='alteracoesAirtable.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%d-%b-%y %H:%M:%S')
 
 
 app = Flask(__name__)
@@ -56,7 +63,9 @@ def setar_respondido(id):
     }
 
     response = requests.patch(URL, headers=headers, data = json.dumps(data))
-    print(response.status_code, response.json())
+    
+    logging.info(f'id:{id} status:{response.status_code} response:{response.json()} \n')
+   
 
     return response.status_code
 
