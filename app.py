@@ -70,6 +70,30 @@ def setar_respondido(id):
     return response.status_code
 
 
+def setar_contratado(id):
+    AIRTABLE_API_KEY = "pat39oW2cnvz87JRR.5a7c60aebce90b864b229996578e9a8bd3f0423a55a0f0ddc55567e44900e74a"
+    BASE_ID = "app33F8uf0F6dQkPH"
+    TABLE_ID = "tbl38ywsZPimg8U1E"
+    URL = f"https://api.airtable.com/v0/{BASE_ID}/{TABLE_ID}/{id}"
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Content-type": "application/json"
+    }
+
+    data = {
+        "fields":{
+            "Contratado": True
+        }
+    }
+
+    response = requests.patch(URL, headers=headers, data = json.dumps(data))
+    
+    logging.info(f'id:{id} status:{response.status_code} response:{response.json()} \n')
+   
+
+    return response.status_code
+
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
@@ -91,6 +115,31 @@ def webhook():
                 return jsonify({'error': 'Erro ao responder'}), 500
         else:
             return jsonify({'error': 'Registro não encontrado'}), 404
-            
+
+@app.route('/kommowebhook', methods=['POST'])
+def kommowebhook():
+    data = request.get_json()
+    username = data.get('username')
+    origem = data.get('origem')
+
+    if not username or not origem:
+        return jsonify({'error': 'username e origem são obrigatórios'}), 400
+    
+    if origem == 'kommochat':
+        id = procurar_linha_por_coluna(username)
+        if id:
+            resultado = setar_contratado(id)
+            if resultado == 200:
+                return jsonify({'status': 'Respondido com sucesso'}), 200
+            else:
+                return jsonify({'error': 'Erro ao responder'}), 500
+        else:
+            return jsonify({'error': 'Registro não encontrado'}), 404
+    else:
+        return jsonify({'error': 'Origem inválida'}), 400
+
+
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port= 5003, debug=True)
